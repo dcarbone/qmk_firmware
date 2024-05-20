@@ -31,7 +31,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |--------+------+------+------+------+------| ~L1  |           |  ~L1 |------+------+------+------+------+--------|
  * | LShift |   Z  |   X  |   C  |   V  |   B  |      |           |      |   N  |   M  |   ,  |   .  |   /  | RShift |
  * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   | Ctrl | Opt  | Cmd  | Left | Right|                                       | Down | Up   | Ctrl | Cmd  | Opt  |
+ *   | Ctrl | Gui  | Alt  | Left | Right|                                       | Down | Up   | Alt |  Gui  | Ctrl |
  *   `----------------------------------'                                       `----------------------------------'
  *                                        ,-------------.       ,-------------.
  *                                        |      | L1   |       | Alt  | Ctrl   ]
@@ -146,74 +146,74 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
        KC_TRNS, KC_TRNS, KC_TRNS
     ),
 };
-#ifndef NO_FAKE_CAPS
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    static onoff caps_state = OFF;
+// #ifndef NO_FAKE_CAPS
+// bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+//     static onoff caps_state = OFF;
 
-    switch (keycode) {
-        case KC_CAPS:
-            if (record->event.pressed) {
-                if (caps_state == OFF) {
-                    caps_led_on();
-                    caps_state = ON;
-                } else {
-                    caps_led_off();
-                    caps_state = OFF;
-                }
-            }
-            break;
-        default:
-            if (keycode < KC_A || keycode > KC_Z) {
-                // This isn't an alpha or a KC_CAPS, continue on as usual.
-                return true;
-            }
-            if (record->event.pressed) {
-                bool shifted = (caps_state == ON && get_mods() == 0);
-                if (shifted) {
-                    register_code(KC_LSFT);
-                }
-                register_code(keycode);
-                if (shifted) {
-                    unregister_code(KC_LSFT);
-                }
-            } else {
-                unregister_code(keycode);
-            }
-            break;
-    }
-    // If we get here, we've already handled the keypresses.
-    return false;
-}
-#endif
+//     switch (keycode) {
+//         case KC_CAPS:
+//             if (record->event.pressed) {
+//                 if (caps_state == OFF) {
+//                     caps_led_on();
+//                     caps_state = ON;
+//                 } else {
+//                     caps_led_off();
+//                     caps_state = OFF;
+//                 }
+//             }
+//             break;
+//         default:
+//             if (keycode < KC_A || keycode > KC_Z) {
+//                 // This isn't an alpha or a KC_CAPS, continue on as usual.
+//                 return true;
+//             }
+//             if (record->event.pressed) {
+//                 bool shifted = (caps_state == ON && get_mods() == 0);
+//                 if (shifted) {
+//                     register_code(KC_LSFT);
+//                 }
+//                 register_code(keycode);
+//                 if (shifted) {
+//                     unregister_code(KC_LSFT);
+//                 }
+//             } else {
+//                 unregister_code(keycode);
+//             }
+//             break;
+//     }
+//     // If we get here, we've already handled the keypresses.
+//     return false;
+// }
+// #endif
 
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {
     uint8_t layer = get_highest_layer(layer_state);
 
-    static onoff board_led_state = OFF;
+    static onoff layer_led_state = OFF;
     static uint16_t dt = 0;
     static uint8_t oldlayer = 0;
 
     if (oldlayer != layer) {
         // Layer was just toggled.
         if (layer == BASE) {
-            ergodox_board_led_off();
-            board_led_state = OFF;
+            ergodox_right_led_1_off();
+            layer_led_state = OFF;
         } else {
-            ergodox_board_led_on();
-            board_led_state = ON;
+            ergodox_right_led_1_on();
+            layer_led_state = ON;
         }
     } else if (layer >= MDIA) {
         // We need to do blinking.
         if (timer_elapsed(dt) > BLINK_BASE) {
             // toggle
             dt = timer_read();
-            if (board_led_state == OFF) {
-                ergodox_board_led_on();
-                board_led_state = ON;
+            if (layer_led_state == OFF) {
+                ergodox_right_led_1_on();
+                layer_led_state = ON;
             } else {
-                ergodox_board_led_off();
-                board_led_state = OFF;
+                ergodox_right_led_1_off();
+                layer_led_state = OFF;
             }
         }
     }
